@@ -1,4 +1,4 @@
-import { openai } from "./Config";
+import { openai } from "./config";
 
 export const generateText = async (
   type = "headline",
