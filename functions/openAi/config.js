@@ -1,12 +1,10 @@
 import { Configuration, OpenAIApi } from "openai";
 
-const prompt = "Write a short story about a detective investigating a murder case.";
-const apiKey = "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"; // replace with your API key
-const modelEngine = "text-davinci-001"; // replace with the desired model
+const apiKey = process.env.OPENAI_API_KEY // replace with your API key
 
 export const configuration = new Configuration({
   organization: "org-BYsIRtRRwdvKTsysEMc3lOsh",
-  apiKey: apiKey,
+  apiKey: "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",
 });
 
 export const openai = new OpenAIApi(configuration);
