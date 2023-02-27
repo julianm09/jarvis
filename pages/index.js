@@ -17,7 +17,7 @@ export default function Home() {
     const random =
       "https://api.unsplash.com/photos/random?client_id=VcpKFVjbEWrxtXl1M3cgzYoh_DBLTwAmcLLGf3P8yy8";
 
-    const randNum = Math.floor(Math.random() * 10) + 1;
+    const randNum = Math.floor(Math.random() * 5) + 1;
 
     const search = `https://api.unsplash.com/search/photos?page=${randNum}&query=${imageQuery}&orientation=landscape&client_id=VcpKFVjbEWrxtXl1M3cgzYoh_DBLTwAmcLLGf3P8yy8`;
 
@@ -28,30 +28,45 @@ export default function Home() {
       return data.results[randNum].urls.thumb;
     }
 
-    fetchImage().then((img) => {
-      generateText(
-        "headline",
-        `${businessName} landing page`,
-        businessDescription,
-        selectedOption,
-        randomness
-      ).then((r) => {
-        generateText("text block", r, selectedOption, randomness).then((r2) => {
-          console.log(r, r2);
-          const content =
-            sectionType === "info"
-              ? `<div class="${selectedOption}">
+    fetchImage()
+      .catch((err) => {
+        console.log(err);
+        return;
+      })
+      .then((img) => {
+        generateText(
+          "headline",
+          `${businessName} landing page`,
+          businessDescription,
+          selectedOption,
+          randomness
+        )
+          .catch((err) => {
+            console.log(err);
+            return;
+          })
+          .then((r) => {
+            generateText("text block", r, selectedOption, randomness)
+              .catch((err) => {
+                console.log(err);
+                return;
+              })
+              .then((r2) => {
+                console.log(r, r2);
+                const content =
+                  sectionType === "info"
+                    ? `<div class="${selectedOption}">
                     <div class="column">                  
                       <h1>${r}</h1>
                       <p>${r2}</p>
                     </div>
                     <img src=${img}/>
                   </div>`
-              : "";
-          setSections([...sections, { name: "two", html: content }]);
-        });
+                    : "";
+                setSections([...sections, { name: "two", html: content }]);
+              });
+          });
       });
-    });
   };
 
   console.log(sections.map((x) => x.html).join(" "));
