@@ -36,7 +36,7 @@ export default function Home() {
       .then((img) => {
         generateText(
           "headline",
-          `${businessName} landing page`,
+          businessName,
           businessDescription,
           selectedOption,
           randomness

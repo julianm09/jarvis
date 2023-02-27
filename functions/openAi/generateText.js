@@ -2,7 +2,7 @@ import { openai } from "./config";
 
 export const generateText = async (
   type = "headline",
-  role = "a law firm landing page",
+  role = "law firm",
   description ="",
   section = "hero",
   randomness = 0.1
