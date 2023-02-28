@@ -152,8 +152,9 @@ export default function Home() {
       </ControlUI>
 
       {sections &&
-        sections.map((section) => (
+        sections.map((section, i) => (
           <Section
+            key={i}
             section={section}
             setLoading={setLoading}
             loading={loading}

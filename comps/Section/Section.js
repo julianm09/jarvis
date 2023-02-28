@@ -7,11 +7,12 @@ export default function Section({
   section,
   loading,
   setLoading,
+  key
 }) {
   const [layout, setLayout] = useState(1);
 
   return (
-    <section className={"section " + section.type + "-" + layout}>
+    <section className={"section " + section.type + "-" + layout} key={key}>
       <div className="button-container">
         <button onClick={() => setLayout(1)}>1</button>
         <button onClick={() => setLayout(2)}>2</button>
