@@ -1,31 +1,33 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { generateText } from "../functions/openAi/generateText.js";
 import { exportHtml } from "../functions/exportHtml/exportHtml.js";
 import Dropdown from "../comps/Dropdown/Dropdown.js";
-import { Slider } from "@mui/material";
+import { CircularProgress, Slider } from "@mui/material";
+import styled from "styled-components";
+import { Input } from "../comps/Input/Input.js";
+import Section from "../comps/Section/Section.js";
 
 export default function Home() {
   const [sections, setSections] = useState([]);
-  const [sectionType, setSectionType] = useState("info");
   const [businessName, setBusinessName] = useState("");
   const [businessDescription, setBusinessDescription] = useState("");
   const [imageQuery, setImageQuery] = useState("");
   const [selectedOption, setSelectedOption] = useState("hero");
-  const [randomness, setRandomness] = useState();
+  const [randomness, setRandomness] = useState(0.5);
+  const [loading, setLoading] = useState(false);
 
   const generateSection = () => {
-    const random =
-      "https://api.unsplash.com/photos/random?client_id=VcpKFVjbEWrxtXl1M3cgzYoh_DBLTwAmcLLGf3P8yy8";
+    setLoading(true);
 
     const randNum = Math.floor(Math.random() * 5) + 1;
+    const randNum2 = Math.floor(Math.random() * 5) + 1;
 
     const search = `https://api.unsplash.com/search/photos?page=${randNum}&query=${imageQuery}&orientation=landscape&client_id=VcpKFVjbEWrxtXl1M3cgzYoh_DBLTwAmcLLGf3P8yy8`;
 
     async function fetchImage() {
       const response = await fetch(search);
       const data = await response.json();
-      console.log("image data", data);
-      return data.results[randNum].urls.thumb;
+      return data.results[randNum2].urls.full;
     }
 
     fetchImage()
@@ -35,7 +37,7 @@ export default function Home() {
       })
       .then((img) => {
         generateText(
-          "headline",
+          "h1",
           businessName,
           businessDescription,
           selectedOption,
@@ -46,90 +48,97 @@ export default function Home() {
             return;
           })
           .then((r) => {
-            generateText("text block", r, selectedOption, randomness)
+            generateText(
+              "text block",
+              businessName,
+              businessDescription,
+              selectedOption,
+              randomness
+            )
               .catch((err) => {
                 console.log(err);
                 return;
               })
               .then((r2) => {
-                console.log(r, r2);
-                const content =
-                  sectionType === "info"
-                    ? `<div class="${selectedOption}">
-                    <div class="column">                  
-                      <h1>${r}</h1>
-                      <p>${r2}</p>
-                    </div>
-                    <img src=${img}/>
-                  </div>`
-                    : "";
-                setSections([...sections, { name: "two", html: content }]);
+                const section = {
+                  type: selectedOption,
+                  class: selectedOption + "-1",
+                  h1: r,
+                  text: r2,
+                  image: img,
+                };
+
+                setSections([...sections, section]);
               });
           });
       });
   };
 
-  console.log(sections.map((x) => x.html).join(" "));
-
   return (
     <div style={{ background: "white", color: "black" }}>
-      <div
-        style={{
-          background: "black",
-          color: "white",
-          padding: "20px",
-          display: "flex",
-          justifyContent: "space-between",
-          width: "100%",
-          position: "fixed",
-          bottom: "0",
-          zIndex: 999,
-        }}
-      >
-        <div style={{ display: "flex", width: "300px", alignItems: "center" }}>
-          <div style={{ margin: "0 20px 0 0" }}>business name:</div>
-          <input
-            value={businessName}
+      <ControlUI>
+        <ColumnUI>
+          <Input
+            label="business name"
             onChange={(e) => {
               setBusinessName(e.target.value);
             }}
+            value={businessName}
           />
-        </div>
 
-        <div style={{ display: "flex", width: "300px", alignItems: "center" }}>
-          <div style={{ margin: "0 20px 0 0" }}>business description:</div>
-          <input
-            value={businessDescription}
+          <Input
+            label="business description"
             onChange={(e) => {
               setBusinessDescription(e.target.value);
             }}
+            value={businessDescription}
           />
-        </div>
 
-        <div style={{ display: "flex", width: "300px", alignItems: "center" }}>
-          <div style={{ margin: "0 20px 0 0" }}>image (one word):</div>
-          <input
-            value={imageQuery}
+          <Input
+            label="image (one word)"
             onChange={(e) => {
               setImageQuery(e.target.value);
             }}
+            value={imageQuery}
           />
-        </div>
+        </ColumnUI>
+        <ColumnUI>
+          <Dropdown
+            onSelect={(option) => {
+              setSelectedOption(option.value);
+            }}
+            options={[
+              { value: "hero", label: "hero section" },
+              { value: "about", label: "about section" },
+            ]}
+          />
 
-        <Dropdown
-          onSelect={(option) => {
-            setSelectedOption(option.value);
+          <button
+            onClick={generateSection}
+            style={{
+              margin: "0 0 20px 0",
+              background: "#4D7EFF",
+              color: "white",
+              padding: "10px",
+            }}
+          >
+            Generate Section
+          </button>
+
+          {loading && <CircularProgress/>}
+        </ColumnUI>
+
+        <div
+          style={{
+            display: "flex",
+            width: "400px",
+            alignItems: "center",
+            margin: "0 0 20px 0",
           }}
-          options={[
-            { value: "hero", label: "hero section" },
-            { value: "about", label: "about section" },
-            { value: "services", label: "services section" },
-          ]}
-        />
-        <div style={{ display: "flex", width: "400px", alignItems: "center" }}>
-          <div style={{ margin: "0 20px 0 0" }}>random:</div>
+        >
+          <div style={{ margin: "0 20px 0 0" }}>temperature:</div>
           <Slider
-            defaultValue={50}
+            defaultValue={randomness * 100}
             onChange={(e) => {
               setRandomness(e.target.value / 100);
             }}
@@ -137,16 +146,20 @@ export default function Home() {
             valueLabelDisplay="auto"
           />
         </div>
+        {/* <ColumnUI>
+          <button onClick={() => exportHtml(sections)}>Output HTML File</button>
+        </ColumnUI> */}
+      </ControlUI>
 
-        <button onClick={generateSection}>Generate Section</button>
-        <button onClick={() => exportHtml(sections)}>Output HTML File</button>
-      </div>
+      {sections &&
+        sections.map((section) => (
+          <Section
+            section={section}
+            setLoading={setLoading}
+            loading={loading}
+          />
+        ))}
 
-      <div
-        dangerouslySetInnerHTML={{
-          __html: sections.map((x) => x.html).join(" "),
-        }}
-      ></div>
       <div
         style={{
           width: "100%",
@@ -159,3 +172,28 @@ export default function Home() {
     </div>
   );
 }
+
+const ControlUI = styled.div`
+  display: flex;
+  background: black;
+  color: white;
+  padding: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  position: fixed;
+  bottom: 0;
+  z-index: 999;
+  padding: 40px;
+
+  @media (max-width: 1000px) {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+`;
+
+const ColumnUI = styled.div`
+  display: flex;
+  flex-direction: column;
+`;
